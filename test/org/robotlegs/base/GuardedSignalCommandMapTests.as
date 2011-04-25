@@ -113,6 +113,25 @@ package org.robotlegs.base
 			assertThat(_reportedCommands, array(SampleCommandA, SampleCommandC));
 		}
 		
+		[Test]
+		public function signals_order():void {
+		//@see https://github.com/joelhooks/signals-extensions-CommandSignal/issues/17
+			var expected: Array = ['a', 'b'];
+			var result: Array = [];
+			var signal:Signal = new Signal();
+			var callbackA: Function = function(): void{
+				result.push('a');
+			};
+			var callbackB: Function = function(): void{
+				result.push('b');
+			};
+			signal.add(callbackA);
+			signal.add(callbackB);
+			
+			signal.dispatch();       
+			assertThat(result, expected);
+		}
+		
 		[Test(expected="org.robotlegs.base.ContextError")]
 		public function error_thrown_if_non_guards_provided_in_guard_value_argument():void {
 			var signal:Signal = new Signal();

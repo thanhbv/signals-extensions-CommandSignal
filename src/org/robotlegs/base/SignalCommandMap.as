@@ -22,25 +22,29 @@ package org.robotlegs.base
             verifiedCommandClasses = new Dictionary( false );
         }
 
-        public function mapSignal(signal:ISignal, commandClass:Class, oneShot:Boolean = false):void
+        public function mapSignal(signal:ISignal, commandClass:Class, oneShot:Boolean = false, named:String = ""):void
         {
+	    //@see https://github.com/joelhooks/signals-extensions-CommandSignal/issues/2#issuecomment-984481
+            if(named != "" && signal.valueClasses.length > 1)
+                //FIXME hardcode
+                throw new ContextError("use named param in mapSignal with a Signal class that has more than one valueClasses");
             verifyCommandClass( commandClass );
             if ( hasSignalCommand( signal, commandClass ) )
                 return;
             var signalCommandMap:Dictionary = signalMap[signal] ||= new Dictionary( false );
             var callback:Function = function(a:* = null, b:* = null, c:* = null, d:* = null, e:* = null, f:* = null, g:* = null):void
             {
-                routeSignalToCommand( signal, arguments, commandClass, oneShot );
+                routeSignalToCommand(signal, arguments, commandClass, oneShot, named);
             };
 
             signalCommandMap[commandClass] = callback;
             signal.add( callback );
         }
 
-        public function mapSignalClass(signalClass:Class, commandClass:Class, oneShot:Boolean = false):ISignal
+        public function mapSignalClass(signalClass:Class, commandClass:Class, oneShot:Boolean = false, named:String = ""):ISignal
         {
             var signal:ISignal = getSignalClassInstance( signalClass );
-            mapSignal( signal, commandClass, oneShot );
+            mapSignal(signal, commandClass, oneShot, named);
             return signal;
         }
 
@@ -84,11 +88,11 @@ package org.robotlegs.base
 			unmapSignal(getSignalClassInstance(signalClass), commandClass);
 		}
 
-        protected function routeSignalToCommand(signal:ISignal, valueObjects:Array, commandClass:Class, oneshot:Boolean):void
+        protected function routeSignalToCommand(signal:ISignal, valueObjects:Array, commandClass:Class, oneshot:Boolean, named:String = ""):void
         {
-            mapSignalValues( signal.valueClasses, valueObjects );
+            mapSignalValues(signal.valueClasses, valueObjects, named);
             createCommandInstance( commandClass).execute();
-            unmapSignalValues( signal.valueClasses, valueObjects );
+            unmapSignalValues(signal.valueClasses, valueObjects, named);
             if ( oneshot )
                 unmapSignal( signal, commandClass );
         }
@@ -97,15 +101,15 @@ package org.robotlegs.base
             return injector.instantiate(commandClass);
         }
 
-        protected function mapSignalValues(valueClasses:Array, valueObjects:Array):void {
+        protected function mapSignalValues(valueClasses:Array, valueObjects:Array, named:String = ""):void {
             for (var i:uint = 0; i < valueClasses.length; i++) {
-                injector.mapValue(valueClasses[i], valueObjects[i]);
+                injector.mapValue(valueClasses[i], valueObjects[i], named);
             }
         }
 
-        protected function unmapSignalValues(valueClasses:Array, valueObjects:Array):void {
+        protected function unmapSignalValues(valueClasses:Array, valueObjects:Array, named:String = ""):void {
             for (var i:uint = 0; i < valueClasses.length; i++) {
-                injector.unmap(valueClasses[i]);
+                injector.unmap(valueClasses[i], named);
             }
         }
 
