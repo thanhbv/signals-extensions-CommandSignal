@@ -5,7 +5,9 @@ package org.robotlegs.base
     import org.flexunit.asserts.*;
     import org.flexunit.*;
     import org.osflash.signals.ISignal;
-    import org.robotlegs.adapters.SwiftSuspendersInjector;
+import org.osflash.signals.PrioritySignal;
+import org.osflash.signals.PrioritySignal;
+import org.robotlegs.adapters.SwiftSuspendersInjector;
     import org.robotlegs.core.IInjector;
     import org.robotlegs.test.support.*;
     import org.robotlegs.test.support.guarding.ICommandReporter;
@@ -105,7 +107,7 @@ package org.robotlegs.base
 		[Test]
 		public function three_commands_with_different_guards_fire_correctly():void { 
 			injector.mapSingletonOf(IInjectedAnswer, InjectedYes);  
-			var signal:Signal = new Signal();
+			var signal:PrioritySignal = new PrioritySignal();
 			guardedCommandMap.mapGuardedSignal(signal, SampleCommandA, HappyGuard);
 			guardedCommandMap.mapGuardedSignal(signal, SampleCommandB, GrumpyGuard);
 			guardedCommandMap.mapGuardedSignal(signal, SampleCommandC, [HappyGuard, InjectedGuard]);
@@ -146,7 +148,7 @@ package org.robotlegs.base
 		
 		[Test]
 		public function signal_values_passed_to_guards():void {
-			var signal:Signal = new Signal(Boolean);
+			var signal:PrioritySignal = new PrioritySignal(Boolean);
 			guardedCommandMap.mapGuardedSignal(signal, SampleCommandA, CooperativeGuard);
 			guardedCommandMap.mapGuardedSignal(signal, SampleCommandB, ContraryGuard);
 			guardedCommandMap.mapGuardedSignal(signal, SampleCommandC, CooperativeGuard);
